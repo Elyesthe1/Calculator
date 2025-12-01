@@ -12,6 +12,7 @@ class Calculator
         static int BuildNumber();
         static int ProcessCalcul(AST *tree);
         static void MooveSpace();
+        static void DeleteTree(AST *tree);
 
         static AST *ParseExpression();
         static AST *ParseTerm();

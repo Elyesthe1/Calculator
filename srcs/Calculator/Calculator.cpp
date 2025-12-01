@@ -98,6 +98,18 @@ int Calculator::ProcessCalcul(AST *tree)
     throw std::logic_error("Unknown operator");
 }
 
+void Calculator::DeleteTree(AST *tree)
+{
+    if (!tree)
+        return;
+    if (tree->left)
+        Calculator::DeleteTree(tree->left);
+    if (tree->right)
+        Calculator::DeleteTree(tree->right);
+    delete tree;
+}
+
+
 void Calculator::ProcessInput(const std::string &line)
 {
     Calculator::input = line;
