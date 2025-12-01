@@ -8,11 +8,9 @@ class Calculator
         static void Start();
         static void MainLoop();
         static void ProcessInput(const std::string &Input);
-        // static void IsTokenValid(const char &Token);
-        // static bool IsParenthesis(const char &token);
-        // static bool IsOperator(const char &token);
 
         static int BuildNumber();
+        static int ProcessCalcul(AST *tree);
         static void MooveSpace();
 
         static AST *ParseExpression();

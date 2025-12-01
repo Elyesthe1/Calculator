@@ -3,27 +3,6 @@
 std::string Calculator::input;
 std::size_t Calculator::index = 0;
 
-// bool Calculator::IsParenthesis(const char &token) 
-// {
-//     if (token == '(' || token == ')') 
-//         return 1;
-//     return 0;
-// }
-
-// bool Calculator::IsOperator(const char &token) 
-// {
-//     if (token == '+' || token == '/' || token == '-' || token == '*')
-//         return 1; 
-//     return 0;
-
-// }
-
-// void Calculator::IsTokenValid(const char &Token)
-// {
-//     if (!std::isdigit(Token) && !std::isspace(Token) && !Calculator::IsOperator(Token) && !Calculator::IsParenthesis(Token))
-//         throw std::logic_error(std::string("Unexpected token: '") + Token + "'");
-// }
-
 void Calculator::MooveSpace() 
 {
     while(std::isspace(Calculator::input[Calculator::index])) 
@@ -56,7 +35,7 @@ AST *Calculator::ParseFactor()
         AST *node = Calculator::ParseExpression();
         if (Calculator::input[Calculator::index] != ')')
             throw std::logic_error("Missing ')'");
-        Calculator::index++;
+        Calculator::index++; Calculator::MooveSpace();
         return node;
         
     }
@@ -95,12 +74,37 @@ AST *Calculator::ParseExpression()
     return left;
 }
 
+int Calculator::ProcessCalcul(AST *tree)
+{
+    if (!tree)
+        return 0;
+    
+    if (tree->token == 'N')
+        return tree->number;
+    
+    int left = Calculator::ProcessCalcul(tree->left);
+    int right = Calculator::ProcessCalcul(tree->right);
+
+    switch (tree->token)
+    {
+        case '+': return left + right;
+        case '-': return left - right;
+        case '*': return left * right;
+        case '/': 
+            if (right == 0)
+                throw std::domain_error("Division by zero");
+            return left / right;
+    }
+    throw std::logic_error("Unknown operator");
+}
+
 void Calculator::ProcessInput(const std::string &line)
 {
     Calculator::input = line;
     Calculator::index = 0;
     AST *tree = Calculator::ParseExpression();
-    // faire mes truc puis
+    int result = Calculator::ProcessCalcul(tree);
+    std::cout << "= "  << result << std::endl;
 }
 
 void Calculator::Start()
