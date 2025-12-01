@@ -102,10 +102,8 @@ void Calculator::DeleteTree(AST *tree)
 {
     if (!tree)
         return;
-    if (tree->left)
-        Calculator::DeleteTree(tree->left);
-    if (tree->right)
-        Calculator::DeleteTree(tree->right);
+    Calculator::DeleteTree(tree->left);
+    Calculator::DeleteTree(tree->right);
     delete tree;
 }
 
@@ -117,6 +115,7 @@ void Calculator::ProcessInput(const std::string &line)
     AST *tree = Calculator::ParseExpression();
     int result = Calculator::ProcessCalcul(tree);
     std::cout << "= "  << result << std::endl;
+    Calculator::DeleteTree(tree);
 }
 
 void Calculator::Start()
