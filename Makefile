@@ -6,6 +6,7 @@ NAME = Calculator
 
 SRCS = srcs/main.cpp \
 	   srcs/Calculator/Calculator.cpp \
+	   srcs/AST/AST.cpp \
 
 OBJS = $(SRCS:.cpp=.o)
 
