@@ -47,6 +47,7 @@ int Calculator::BuildNumber()
 
 AST *Calculator::ParseFactor()
 {
+    Calculator::MooveSpace();
     if (std::isdigit(Calculator::input[Calculator::index]) || ((Calculator::input[Calculator::index] == '-' || Calculator::input[Calculator::index] == '+') && std::isdigit(Calculator::input[Calculator::index + 1])) )
         return new AST(Calculator::BuildNumber());
     if(Calculator::input[Calculator::index] == '(')
@@ -87,7 +88,7 @@ AST *Calculator::ParseExpression()
         const char Operator = Calculator::input[Calculator::index];
         Calculator::index++; Calculator::MooveSpace();
 
-        AST *right = ParseFactor();
+        AST *right = Calculator::ParseTerm();;
 
         left = new AST(Operator, left, right);
     }
@@ -100,7 +101,6 @@ void Calculator::ProcessInput(const std::string &line)
     Calculator::index = 0;
     AST *tree = Calculator::ParseExpression();
     // faire mes truc puis
-    delete tree;
 }
 
 void Calculator::Start()
