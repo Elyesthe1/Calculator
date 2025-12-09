@@ -104,12 +104,12 @@ std::optional<int> Calculator::ProcessCalcul(AST *tree)
         case '/': 
             if (right == 0)
             {
-                std::cerr << "Division by zero" << std::endl; /// help sasso
+                std::cerr << "Division by zero" << std::endl;
                 return std::nullopt;
             }
             return left.value() / right.value();
     }
-    std::cerr << "Unknown operator" << std::endl; /// help sasso
+    std::cerr << "Unknown operator" << std::endl;
     return std::nullopt;
 }
 
