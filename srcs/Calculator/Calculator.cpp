@@ -14,7 +14,7 @@ int Calculator::BuildNumber()
 {
     Calculator::MooveSpace();
     int result = 0;
-    int signe = Calculator::input[Calculator::index] == '-' ? -1 : 1;
+    const int signe = Calculator::input[Calculator::index] == '-' ? -1 : 1;
     if (Calculator::input[Calculator::index] == '-' || Calculator::input[Calculator::index] == '+')
         Calculator::index++;
     for(; std::isdigit(Calculator::input[Calculator::index]); Calculator::index++)
@@ -34,26 +34,31 @@ AST *Calculator::ParseFactor()
         Calculator::index++; Calculator::MooveSpace();
         AST *node = Calculator::ParseExpression();
         if (Calculator::input[Calculator::index] != ')')
-            throw std::logic_error("Missing ')'");
+        {
+            std::cerr << "Missing ')'" << std::endl;
+            return NULL;
+        }
         Calculator::index++; Calculator::MooveSpace();
         return node;
-        
     }
-    throw std::logic_error("Bad factor");
+    return NULL;
 }
 
 
 AST *Calculator::ParseTerm()
 {
     AST *left = Calculator::ParseFactor();
+    if (!left)
+        return NULL;
     while(Calculator::input[Calculator::index] == '/' || Calculator::input[Calculator::index] == '*')
     {
         const char Operator = Calculator::input[Calculator::index];
         Calculator::index++; Calculator::MooveSpace();
         AST *right = ParseFactor();
+        if (!right)
+            return NULL;
         left = new AST(Operator, left, right);
     }
-
     return left;
 }
 
@@ -61,41 +66,51 @@ AST *Calculator::ParseTerm()
 AST *Calculator::ParseExpression()
 {
     AST *left = Calculator::ParseTerm();
-
+    if (!left)
+        return NULL;
     while(Calculator::input[Calculator::index] == '+' || Calculator::input[Calculator::index] == '-')
     {
         const char Operator = Calculator::input[Calculator::index];
         Calculator::index++; Calculator::MooveSpace();
 
         AST *right = Calculator::ParseTerm();;
+        if (!right)
+            return NULL;
 
         left = new AST(Operator, left, right);
     }
     return left;
 }
 
-int Calculator::ProcessCalcul(AST *tree)
+std::optional<int> Calculator::ProcessCalcul(AST *tree)
 {
     if (!tree)
-        return 0;
+        return std::nullopt;
     
     if (tree->token == 'N')
         return tree->number;
     
-    int left = Calculator::ProcessCalcul(tree->left);
-    int right = Calculator::ProcessCalcul(tree->right);
+    std::optional<int> left = Calculator::ProcessCalcul(tree->left);
+    std::optional<int> right = Calculator::ProcessCalcul(tree->right);
+
+    if (!left.has_value() || !right.has_value())
+        return std::nullopt;
 
     switch (tree->token)
     {
-        case '+': return left + right;
-        case '-': return left - right;
-        case '*': return left * right;
+        case '+': return left.value() + right.value();
+        case '-': return left.value() - right.value();
+        case '*': return left.value() * right.value();
         case '/': 
             if (right == 0)
-                throw std::domain_error("Division by zero");
-            return left / right;
+            {
+                std::cerr << "Division by zero" << std::endl; /// help sasso
+                return std::nullopt;
+            }
+            return left.value() / right.value();
     }
-    throw std::logic_error("Unknown operator");
+    std::cerr << "Unknown operator" << std::endl; /// help sasso
+    return std::nullopt;
 }
 
 void Calculator::DeleteTree(AST *tree)
@@ -112,15 +127,41 @@ void Calculator::ProcessInput(const std::string &line)
 {
     Calculator::input = line;
     Calculator::index = 0;
+
     AST *tree = Calculator::ParseExpression();
-    int result = Calculator::ProcessCalcul(tree);
-    std::cout << "= "  << result << std::endl;
+    if(!tree)
+        return ;
+    std::optional<int> result = Calculator::ProcessCalcul(tree);
+    if (!result)
+    {
+        Calculator::DeleteTree(tree);
+        return ;
+    }
+    std::cout << "= "  << result.value() << std::endl;
     Calculator::DeleteTree(tree);
 }
+int Calculator::Compute(std::string expression)
+{
+    Calculator::input = expression;
+    Calculator::index = 0;
+
+    AST *tree = Calculator::ParseExpression();
+    if(!tree)
+        return 0;
+    std::optional<int> result = Calculator::ProcessCalcul(tree);
+    if (!result)
+    {
+        Calculator::DeleteTree(tree);
+        return 0;
+    }
+    Calculator::DeleteTree(tree);
+    return result.has_value() ? result.value() : 0;
+}
+
 
 void Calculator::Start()
 {
-    Calculator::MainLoop();
+     Calculator::MainLoop();
 }
 
 void Calculator::MainLoop()
@@ -131,14 +172,6 @@ void Calculator::MainLoop()
         std::string line;
         if (!std::getline(std::cin, line))
             break;
-        try
-        {
-            Calculator::ProcessInput(line);
-        }
-        catch(const std::exception& e)
-        {
-            std::cerr << e.what() << std::endl;
-        }
-        
+        Calculator::ProcessInput(line);
     }
 }
